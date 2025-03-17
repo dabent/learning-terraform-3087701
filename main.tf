@@ -85,7 +85,7 @@ module "alb" {
       target_group_index = 0
     } 
   }
-}
+
 
   target_groups = {
     ex-instance = {
