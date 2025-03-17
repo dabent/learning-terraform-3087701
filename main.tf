@@ -47,6 +47,42 @@ resource "aws_instance" "blog" {
   }
 }
 
+module "alb" {
+  source = "terraform-aws-modules/alb/aws"
+
+  name               = "blog-alb"
+  load_balancer_type = "application"
+  vpc_id             = module.blog_vpc.vpc_id
+  subnets            = module.blog_vpc.subnet_id
+  security_groups    = module.blog_sg.public_subnets
+
+
+  listeners = {
+    ex-tcp = {
+      port     = 80
+      protocol = "TCP"
+      forward = {
+        target_group_key = "ex-target"
+      }
+    }
+  }
+
+  target_groups = {
+    ex-target = {
+      name_prefix = "blog-"
+      protocol    = "TCP"
+      port        = 80
+      target_type = "ip"
+      target_id   = aws_instance.blog.id
+    }
+  }
+
+  tags = {
+    Environment = "dev"
+    Project     = "Terrafor Learning"
+  }
+}
+
 module "blog_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.3.0"
